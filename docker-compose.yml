@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  postgres-db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: flasky
+    networks:
+      - postgres-compose-network
+    ports:
+      - "5432:5432"
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    depends_on:
+      - postgres-db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@ay.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    networks:
+      - postgres-compose-network
+    ports:
+      - "5050:80"
+networks:
+  postgres-compose-network:
+    driver: bridge
