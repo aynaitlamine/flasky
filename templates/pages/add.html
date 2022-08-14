@@ -1,0 +1,20 @@
+{% extends "layouts/main.html" %}
+{% block title %} Add {% endblock %}
+{% block head %} 
+    {{ super() }}
+{% endblock %}
+{% block body %}
+    <h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
+    <div>
+        {% if not known %}
+            <p>Pleased to meet you!</p>
+        {% else %}
+            <p>Happy to see you again!</p>
+        {% endif %}
+    </div>
+    <form method="POST" action={{ url_for("add")}}>
+        {{ form.hidden_tag() }}
+        {{ form.name(placeholder='Name') }}
+        {{ form.submit() }}
+    </form>
+{% endblock %}
