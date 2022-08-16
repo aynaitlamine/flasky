@@ -1,20 +1,15 @@
 {% extends "layouts/main.html" %}
-{% block title %} Home {% endblock %}
-{% block head %}
-{{ super() }}
-{% endblock %}
-{% block body %}
-<h1>Hello, {% if name %}{{ name }}{% else %}Stranger{% endif %}!</h1>
-<div>
-    {% if not known %}
-    <p>Pleased to meet you!</p>
-    {% else %}
-    <p>Happy to see you again!</p>
-    {% endif %}
+
+{% block title %}Flasky{% endblock %}
+
+{% block page_content %}
+<div class="page-header">
+    <h1>Hello,
+        {% if current_user.is_authenticated %}
+         {{ current_user.username }}
+        {% else %}
+         Stranger
+        {% endif %}!
+    </h1>
 </div>
-<form method="POST" action={{ url_for("main.index")}}>
-    {{ form.hidden_tag() }}
-    {{ form.name(placeholder='Name') }}
-    {{ form.submit() }}
-</form>
 {% endblock %}
