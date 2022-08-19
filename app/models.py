@@ -1,3 +1,4 @@
+import hashlib
 from email.policy import default
 from werkzeug.security import generate_password_hash, check_password_hash
 import datetime
@@ -14,6 +15,7 @@ class Permission:
     WRITE = 4
     MODERATE = 8
     ADMIN = 16
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -43,10 +45,10 @@ class Role(db.Model):
                 Permission.MODERATE
             ],
             "Administrator": [
-                Permission.FOLLOW, 
-                Permission.COMMENT, 
-                Permission.WRITE, 
-                Permission.MODERATE, 
+                Permission.FOLLOW,
+                Permission.COMMENT,
+                Permission.WRITE,
+                Permission.MODERATE,
                 Permission.ADMIN
             ]
         }
@@ -79,15 +81,20 @@ class Role(db.Model):
         return self.permissions & perm == perm
 
 
-
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
     email = db.Column(db.String(64), unique=True, index=True)
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
     password_hash = db.Column(db.String(128))
     confirmed = db.Column(db.Boolean, default=False)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    avatar_hash = db.Column(db.String(32))
+    member_since = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
+    last_seen = db.Column(db.DateTime(), default=datetime.datetime.utcnow)
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)
@@ -96,13 +103,17 @@ class User(UserMixin, db.Model):
                 self.role = Role.query.filter_by(name='Administrator').first()
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+            if self.email is not None and self.avatar_hash is None:
+                self.avatar_hash = self.gravatar_hash()
 
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
+
     @password.setter
     def password(self, password):
         self.password_hash = generate_password_hash(password)
+
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
 
@@ -111,25 +122,25 @@ class User(UserMixin, db.Model):
             {
                 "confirm": self.id,
                 "exp": datetime.datetime.now(tz=datetime.timezone.utc)
-                       + datetime.timedelta(seconds=expiration)
+                + datetime.timedelta(seconds=expiration)
             },
             current_app.config['SECRET_KEY'],
             algorithm="HS256"
         )
         return token
 
-    def confirm(self,token):
-        try: 
+    def confirm(self, token):
+        try:
             data = jwt.decode(token,
-                current_app.config['SECRET_KEY'],
-                leeway=datetime.timedelta(seconds=10),
-                algorithms=["HS256"])
-        except: 
+                              current_app.config['SECRET_KEY'],
+                              leeway=datetime.timedelta(seconds=10),
+                              algorithms=["HS256"])
+        except:
             return False
 
         if data.get('confirm') != self.id:
             return False
-        
+
         self.confirmed = True
         db.session.add(self)
         return True
@@ -140,19 +151,32 @@ class User(UserMixin, db.Model):
     def is_administrator(self):
         return self.can(Permission.ADMIN)
 
+    def ping(self):
+        self.last_seen = datetime.datetime.now()
+        db.session.add(self)
+        db.session.commit()
+
+    def gravatar_hash(self):
+        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        url = 'https://secure.gravatar.com/avatar'
+        hash = self.avatar_hash or self.gravatar_hash()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+            url=url, hash=hash, size=size, default=default, rating=rating)
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
+
     def is_administrator(self):
         return False
+
+
 login_manager.anonymous_user = AnonymousUser
-
-
 
 
 @login_manager.user_loader
 def load_user(user_id):
- return User.query.get(int(user_id))
-
-
+    return User.query.get(int(user_id))

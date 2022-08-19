@@ -1,9 +1,9 @@
-from flask import Blueprint
+from flask import Blueprint # nopep8
 
 main = Blueprint('main', __name__)
 
-from . import views, errors
-from ..models import Permission
+from . import views, errors # nopep8
+from ..models import Permission # nopep8
 
 
 @main.app_context_processor
