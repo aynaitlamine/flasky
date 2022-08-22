@@ -6,6 +6,7 @@
 {{ super() }}
 <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
 {% endblock %}
 
 {% block navbar %}
@@ -28,6 +29,9 @@
         </ul>
         <div class="navbar-collapse collapse">
             <ul class="nav navbar-nav navbar-right">
+                {% if current_user.can(Permission.MODERATE) %}
+                <li><a href="{{ url_for('main.moderate') }}">Moderate Comments</a></li>
+                {% endif %}
                 {% if current_user.is_authenticated %}
                 <li><a href="{{ url_for('auth.logout') }}">Log Out</a></li>
                 {% else %}

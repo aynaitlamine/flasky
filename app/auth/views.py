@@ -20,7 +20,7 @@ def login():
             return redirect(next)
         flash("Invalid username or password.")
 
-    return render_template("pages/auth/login.html", form=form)
+    return render_template("pages/login.html", form=form)
 
 
 @auth.route("/register", methods=["GET", "POST"])
@@ -34,10 +34,10 @@ def register():
 
         token = user.generate_confirmation_token()
         send_email(user.email, 'Confirm Your Account',
-                   'mail/auth/confirm', user=user, token=token)
+                   'mail/confirm', user=user, token=token)
         flash('A confirmation email has been sent to you by email.')
         redirect(url_for("auth.login"))
-    return render_template("pages/auth/register.html", form=form)
+    return render_template("pages/register.html", form=form)
 
 
 @auth.route('/confirm/<token>')
@@ -76,7 +76,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
-    return render_template('pages/auth/unconfirmed.html')
+    return render_template('pages/unconfirmed.html')
 
 
 @auth.route('/confirm')
@@ -84,6 +84,9 @@ def unconfirmed():
 def resend_confirmation():
     token = current_user.generate_confirmation_token()
     send_email(current_user.email, 'Confirm Your Account',
-               'mail/auth/confirm', user=current_user, token=token)
+               'mail/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
+
+
+
