@@ -4,8 +4,9 @@ env/
 ### PyCache ###
 __pycache__/
 
-### Migrations ###
-migrations/
 
 ### Secrets ###
 .env
+
+### TMP #####
+tmp/
