@@ -35,6 +35,7 @@ class ProductionConfig(Config):
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = f"postgresql://{os.environ.get('POSTGRES_USERNAME')}:{os.environ.get('POSTGRES_PASSWORD')}@localhost:5432/flasky-test"
+    WTF_CSRF_ENABLED = False
 
 
 config = {

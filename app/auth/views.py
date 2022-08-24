@@ -1,10 +1,10 @@
-from flask import render_template, redirect, url_for, flash, request, redirect
+from flask import render_template, redirect, url_for, flash, request
 from flask_login import login_user, logout_user, login_required, current_user
 from . import auth
 from .. import db
 from ..models import User
 from ..email import send_email
-from .forms import LoginForm, RegisterForm
+from .forms import *
 
 
 @auth.route("/login", methods=["GET", "POST"])
@@ -36,7 +36,7 @@ def register():
         send_email(user.email, 'Confirm Your Account',
                    'mail/confirm', user=user, token=token)
         flash('A confirmation email has been sent to you by email.')
-        redirect(url_for("auth.login"))
+        return redirect(url_for("auth.login"))
     return render_template("pages/register.html", form=form)
 
 
@@ -87,6 +87,3 @@ def resend_confirmation():
                'mail/confirm', user=current_user, token=token)
     flash('A new confirmation email has been sent to you by email.')
     return redirect(url_for('main.index'))
-
-
-

@@ -2,4 +2,4 @@ from flask import Blueprint
 
 auth = Blueprint("auth", __name__)
 
-from . import views, errors  # nopep8
+from . import views  # nopep8
