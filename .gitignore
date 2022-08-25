@@ -7,3 +7,7 @@ __pycache__/
 
 ### TMP #####
 tmp/
+
+### Data ###
+data.sqlite
+app/fake.py
